@@ -81,3 +81,33 @@ double framework(string &modo, size_t tam, double **matrizCusto) {
 
     return upper_bound;
 }
+/*
+    x* = vetor com variáveis binárias de existência das arestas 
+    c = custo associado a aresta x
+    b - Ax* = 2 - grau(i), sendo i a linha da aresta x
+*/
+
+vector<int> SolveLagrangianDual(int UB, double puloMin, int kMax, vvi &cost) {
+    vector<int> penalizadores; // inicializar com 0's
+    double pulo = 1;
+    int k = 0;
+
+    while (pulo >= puloMin) {
+        // x* solução Kruskal
+
+        // w
+        // com a solução, multiplico todos as arestas (usar o getEdges) pelo seu respectivo custo, 
+        // e cálculo do custo associado ao penalizador (com função de retornar grau do vértice)
+
+        // if w > w*
+        // else if
+
+        // cálculo tamanho do pulo
+
+        // atualização dos penalizadores
+
+        // critério de parada if (grau(i) >= 2 para todo i && penalizadores*(grau(i) - 2) = 0) ou w >= UB
+    }
+
+    // retornar bestPenalizadores
+}
