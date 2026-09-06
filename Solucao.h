@@ -9,11 +9,11 @@
 
 using namespace std;
 
-void MSTpra1Arvore(vii &arestas, double &custo, Data &data);
-vector<int> calcularGraus(vii &arestas, Data &data);
-double calcularLB(const vector<int> &graus, vector<int> &pen, const double &custo, double &soma_quadrados);
-bool stopCriterion(const vector<int> &graus, const vector<int> &pen);
+void MSTpra1Arvore(vii &, double &, Data &);
+vector<int> calcularGraus(vii &, Data &);
+double calcularLB(const vector<int> &, vector<double> &, const double &, double &);
+bool stopCriterion(const vector<int> &, const vector<double> &);
 
-vector<int> SolveLagrangianDual(int UB, double puloMin, int kMax, vvi &cost, Data &data);
+vector<double> SolveLagrangianDual(int, double, int, double &, vector<double> &, vvi &, Data &);
 
 #endif

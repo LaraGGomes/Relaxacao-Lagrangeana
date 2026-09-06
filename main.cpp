@@ -20,37 +20,15 @@ int main(int argc, char** argv) {
 		}
 	}
 
-    auto c = Kruskal(cost);
+    //vector<double> p = SolveLagrangianDual(4000, 10e-5, 30, cost, data);
 
-    auto res = c.MST(data.getDimension()-1); // -1 (sem o primeiro vértice)
-    
-    vii edges = c.getEdges();
+    // cout << "Penalizadores: " << endl;
+    // for (auto x : p) {
+    //     cout << x << ' ';
+    // }
+    // cout << endl;
 
-    cout << edges.size() << endl;
-
-    MSTpra1Arvore(edges, res, data);
-
-    cout << edges.size() << endl;
-    for (auto par : edges) {
-        cout << par.first << ' ' << par.second << endl;
-    }
-
-    vector<int> g = calcularGraus(edges, data);
-
-    for (int i : g) cout << i << ' ';
-    cout << endl;
-
-    cout << "\nCusto original: " << res << endl;
-
-    vector<int> pen{0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // teste
-    double soma_q = 0;
-
-    double LB = calcularLB(g, pen, res, soma_q);
-
-    cout << "Custo penalizado: " << LB << endl;
-    cout << "Soma dos quadrados = " << soma_q << endl;
-
-    // UB é 148 mesmo?
+    // perguntar sobre as páginas faltantes no kit
 
     return 0;
 }

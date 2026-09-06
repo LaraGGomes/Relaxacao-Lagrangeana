@@ -33,7 +33,7 @@ vector<int> calcularGraus(vii &arestas, Data &data) {
     return graus;
 }
 
-double calcularLB(const vector<int> &graus, vector<int> &pen, const double &custo, double &soma_quadrados) {
+double calcularLB(const vector<int> &graus, vector<double> &pen, const double &custo, double &soma_quadrados) {
     double penalidadeTotal = 0;
 
     for (int i = 0; i < pen.size(); i++) {
@@ -46,7 +46,7 @@ double calcularLB(const vector<int> &graus, vector<int> &pen, const double &cust
     return custo + penalidadeTotal;
 }
 
-bool stopCriterion(const vector<int> &graus, const vector<int> &pen) {
+bool stopCriterion(const vector<int> &graus, const vector<double> &pen) {
     for (int i = 0; i < pen.size(); i++) {
         if (graus[i] < 2) return false;
 
@@ -62,26 +62,42 @@ bool stopCriterion(const vector<int> &graus, const vector<int> &pen) {
     b - Ax* = 2 - grau(i), sendo i a linha da aresta x
 */
 
-vector<int> SolveLagrangianDual(int UB, double puloMin, int kMax, vvi &cost, Data &data) {
+vector<double> SolveLagrangianDual(double UB, double puloMin, int kMax, double &bestW, vector<double> &pen, vvi &cost, Data &data) {
     int n = data.getDimension();
-    vector<int> penalizadores(n, 0);
-    vector<int> bestPenalizadores;
+    vector<double> penalizadores(n, 0);
+    vector<double> bestPenalizadores;
     double pulo = 1;
     int k = 0;
-    double bestW = 0;
+    bestW = 0;
+
+    int var = 3;
 
     while (pulo >= puloMin) {
         // x* solução Kruskal
-        auto x = Kruskal(cost);
+        auto x = Kruskal(cost, penalizadores);
 
+        
         double xCusto = x.MST(n-1);
         vii x_edges = x.getEdges();
+
+        //cout << "Kruskal " << xCusto << '\n';
         
         MSTpra1Arvore(x_edges, xCusto, data);
+
+        // if (var) {
+        //     cout << "Penalizadores: " << endl;
+        //     for (auto x : penalizadores) {
+        //         cout << x << ' ';
+        //     }
+        //     cout << "\n";
+        //     var--;
+        // }
 
         double soma_quadrados = 0;
         vector<int> graus = calcularGraus(x_edges, data);
         double w = calcularLB(graus, penalizadores, xCusto, soma_quadrados);
+
+        // cout << "Custo penalizado " << w << "\n\n";
 
         if (w > bestW) {
             bestW = w;
@@ -110,5 +126,69 @@ vector<int> SolveLagrangianDual(int UB, double puloMin, int kMax, vvi &cost, Dat
 
     return bestPenalizadores;
 
-    // teoricamente é isso, testar direitinho depois, principalmente os cálculos
+    // depois checar se as mudanças feitas no Kruskal (adicionei os 
+    // penalizadores ao custo) estão corretas
+}
+
+void novaSolucao(no &node, double UB, double puloMin, int kMax, vector<double> &pen, vvi &cost, Data &data) {
+    int v1, v2;
+    vector<double> custosOriginais(node.arcos_proibidos.size());
+
+    // proibir os arcos do nó pai
+    for (int i = 0; i < node.arcos_proibidos.size(); i++) {
+        v1 = node.arcos_proibidos[i].first -1, v2 = node.arcos_proibidos[i].second -1;
+
+        custosOriginais[i] = cost[v1][v2];
+        cost[v1][v2] = 99999999;
+    }
+
+    // algoritmo
+    double LB;
+    vector<double> p = SolveLagrangianDual(UB, puloMin, kMax, LB, pen, cost, data);
+
+    node.lower_bound = LB;
+
+    // verificação se é um tour (viável) e escolher vértice para proibir vértices
+
+    // reinserir custos originais
+    for (int i = 0; i < node.arcos_proibidos.size(); i++) {
+        v1 = node.arcos_proibidos[i].first -1, v2 = node.arcos_proibidos[i].second -1;
+
+        cost[v1][v2] = custosOriginais[i];
+    }
+}
+
+double framework(string &modo, vvi &cost, Data &data) {
+    no raiz;
+    raiz.arcos_proibidos = {};
+    vector<double> penalizadores(data.getDimension(), 0);
+    double puloMin = 10e-5;
+    int kMax = 30;
+
+    double LB;
+    double UB = numeric_limits<double>::infinity();
+
+    vector<double> p = SolveLagrangianDual(UB, puloMin, kMax, LB, penalizadores, cost, data);
+
+    list<no> arvore;
+    arvore.push_back(raiz);
+
+    while (!arvore.empty()) {
+        auto node = branchingStrategy(arvore, modo);
+
+        if (node->lower_bound >= UB) {
+            arvore.erase(node);
+            continue;
+        }
+
+        if (node->viavel) {
+            UB = min(UB, node->lower_bound);
+        }
+
+        else {
+            // para cada aresta do vértice escolhido, proibir e criar nó filho
+        }
+    }
+
+    return UB;
 }

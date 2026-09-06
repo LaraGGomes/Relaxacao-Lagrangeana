@@ -15,7 +15,7 @@ typedef vector<ii> vii;
 
 class Kruskal{
 public:
-	Kruskal(vvi dist);
+	Kruskal(vvi dist, vector<double> &pen);
 
 	double MST(int nodes);
 	vii getEdges();
