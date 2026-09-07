@@ -22,22 +22,22 @@ void MSTpra1Arvore(vii &arestas, double &custo, Data &data) {
     arestas.push_back({0, v2.second-1});
 }
 
-vector<int> calcularGraus(vii &arestas, Data &data) {
-    vector<int> graus(data.getDimension(), 0);
+vector<vector<int>> calcularGraus(vii &arestas, Data &data) {
+    vector<vector<int>> listaAdj(data.getDimension());
 
     for (const auto &[i, j] : arestas) {
-        graus[i]++;
-        graus[j]++;
+        listaAdj[i].push_back(j);
+        listaAdj[j].push_back(i);
     }
 
-    return graus;
+    return listaAdj;
 }
 
-double calcularLB(const vector<int> &graus, vector<double> &pen, const double &custo, double &soma_quadrados) {
+double calcularLB(const vector<vector<int>> &graus, vector<double> &pen, const double &custo, double &soma_quadrados) {
     double penalidadeTotal = 0;
 
     for (int i = 0; i < pen.size(); i++) {
-        double violacao = 2 - graus[i];
+        double violacao = 2 - graus[i].size();
         penalidadeTotal += pen[i] * violacao;
 
         soma_quadrados += violacao*violacao;    // pra att os penalizadores depois
@@ -46,11 +46,11 @@ double calcularLB(const vector<int> &graus, vector<double> &pen, const double &c
     return custo + penalidadeTotal;
 }
 
-bool stopCriterion(const vector<int> &graus, const vector<double> &pen) {
+bool stopCriterion(const vector<vector<int>> &graus, const vector<double> &pen) {
     for (int i = 0; i < pen.size(); i++) {
-        if (graus[i] < 2) return false;
+        if (graus[i].size() < 2) return false;
 
-        if (pen[i]*graus[i] != 0) return false;
+        if (pen[i]*graus[i].size() != 0) return false;
     }
 
     return true;
@@ -62,7 +62,7 @@ bool stopCriterion(const vector<int> &graus, const vector<double> &pen) {
     b - Ax* = 2 - grau(i), sendo i a linha da aresta x
 */
 
-vector<double> SolveLagrangianDual(double UB, double puloMin, int kMax, double &bestW, vector<double> &pen, vvi &cost, Data &data) {
+vector<double> SolveLagrangianDual(double UB, double puloMin, int kMax, double &bestW, vii &bestEdges, vector<double> &pen, vvi &cost, Data &data) {
     int n = data.getDimension();
     vector<double> penalizadores(n, 0);
     vector<double> bestPenalizadores;
@@ -94,7 +94,7 @@ vector<double> SolveLagrangianDual(double UB, double puloMin, int kMax, double &
         // }
 
         double soma_quadrados = 0;
-        vector<int> graus = calcularGraus(x_edges, data);
+        vector<vector<int>> graus = calcularGraus(x_edges, data);
         double w = calcularLB(graus, penalizadores, xCusto, soma_quadrados);
 
         // cout << "Custo penalizado " << w << "\n\n";
@@ -102,6 +102,7 @@ vector<double> SolveLagrangianDual(double UB, double puloMin, int kMax, double &
         if (w > bestW) {
             bestW = w;
             bestPenalizadores = penalizadores;
+            bestEdges = x_edges;
             k = 0;
         }
         else {
@@ -117,7 +118,7 @@ vector<double> SolveLagrangianDual(double UB, double puloMin, int kMax, double &
 
         // atualização dos penalizadores
         for (int i = 0; i < n; i++) {
-            penalizadores[i] += tp*(2 - graus[i]);
+            penalizadores[i] += tp*(2 - graus[i].size());
         }
 
         // critério de parada
@@ -134,9 +135,9 @@ void novaSolucao(no &node, double UB, double puloMin, int kMax, vector<double> &
     int v1, v2;
     vector<double> custosOriginais(node.arcos_proibidos.size());
 
-    // proibir os arcos do nó pai
+    // proibir os arcos
     for (int i = 0; i < node.arcos_proibidos.size(); i++) {
-        v1 = node.arcos_proibidos[i].first -1, v2 = node.arcos_proibidos[i].second -1;
+        v1 = node.arcos_proibidos[i].first +1, v2 = node.arcos_proibidos[i].second +1;
 
         custosOriginais[i] = cost[v1][v2];
         cost[v1][v2] = 99999999;
@@ -144,11 +145,20 @@ void novaSolucao(no &node, double UB, double puloMin, int kMax, vector<double> &
 
     // algoritmo
     double LB;
-    vector<double> p = SolveLagrangianDual(UB, puloMin, kMax, LB, pen, cost, data);
+    vii arestas;
+    vector<double> p = SolveLagrangianDual(UB, puloMin, kMax, LB, arestas, pen, cost, data);
 
     node.lower_bound = LB;
+    node.penalizadores = p;
 
     // verificação se é um tour (viável) e escolher vértice para proibir vértices
+    vector<vector<int>> listaAdj = calcularGraus(arestas, data);
+    node.listaAdj = listaAdj;
+
+    node.viavel = ehViavel(listaAdj);
+    if (!node.viavel) {
+        node.escolhido = verticeEscolhido(listaAdj);
+    }
 
     // reinserir custos originais
     for (int i = 0; i < node.arcos_proibidos.size(); i++) {
@@ -168,7 +178,7 @@ double framework(string &modo, vvi &cost, Data &data) {
     double LB;
     double UB = numeric_limits<double>::infinity();
 
-    vector<double> p = SolveLagrangianDual(UB, puloMin, kMax, LB, penalizadores, cost, data);
+    novaSolucao(raiz, UB, puloMin, kMax, penalizadores, cost, data);
 
     list<no> arvore;
     arvore.push_back(raiz);
@@ -176,17 +186,28 @@ double framework(string &modo, vvi &cost, Data &data) {
     while (!arvore.empty()) {
         auto node = branchingStrategy(arvore, modo);
 
-        if (node->lower_bound >= UB) {
-            arvore.erase(node);
-            continue;
-        }
-
         if (node->viavel) {
             UB = min(UB, node->lower_bound);
-        }
-
-        else {
+        } else {
             // para cada aresta do vértice escolhido, proibir e criar nó filho
+
+            for (int i = 0; i < node->listaAdj[node->escolhido].size(); i++) {
+                no n;
+                n.arcos_proibidos = node->arcos_proibidos;
+
+                pair<int,int> arcos_proibido = {
+                    node->escolhido,
+                    node->listaAdj[node->escolhido][i]
+                };
+
+                n.arcos_proibidos.push_back(arcos_proibido);
+
+                novaSolucao(n, UB, puloMin, kMax, node->penalizadores, cost, data);
+
+                if (n.lower_bound < UB) {
+                    arvore.push_back(n);
+                }
+            }
         }
     }
 

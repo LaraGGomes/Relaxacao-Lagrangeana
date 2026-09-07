@@ -10,10 +10,10 @@
 using namespace std;
 
 void MSTpra1Arvore(vii &, double &, Data &);
-vector<int> calcularGraus(vii &, Data &);
-double calcularLB(const vector<int> &, vector<double> &, const double &, double &);
-bool stopCriterion(const vector<int> &, const vector<double> &);
+vector<vector<int>> calcularGraus(vii &, Data &);
+double calcularLB(const vector<vector<int>> &, vector<double> &, const double &, double &);
+bool stopCriterion(const vector<vector<int>> &, const vector<double> &);
 
-vector<double> SolveLagrangianDual(int, double, int, double &, vector<double> &, vvi &, Data &);
+vector<double> SolveLagrangianDual(int, double, int, double &, vii &, vector<double> &, vvi &, Data &);
 
 #endif

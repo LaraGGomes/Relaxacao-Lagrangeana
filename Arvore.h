@@ -11,16 +11,14 @@ using namespace std;
 
 typedef struct noArvore {
     vii arcos_proibidos;
-    vector<vector<int>> subtour;    // n vai mais usar
+    vector<vector<int>> listaAdj;
     vector<double> penalizadores;
     double lower_bound; // custo total da solução
     int escolhido;
     bool viavel;
 }no;
 
-vector<pair<int,int>> arcos_proibidos(vector<vector<int>> &subtours, int escolhido);
-vector<vector<int>> subtours(hungarian_problem_t* p);
-int subtourEscolhido(vector<vector<int>> &subtours);
-bool ehViavel(vector<vector<int>> &subtours);
+int verticeEscolhido(vector<vector<int>> &);
+bool ehViavel(vector<vector<int>> &);
 
 #endif
