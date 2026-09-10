@@ -1,18 +1,18 @@
 #include "Arvore.h"
 
-int verticeEscolhido(vector<vector<int>> &graus){
+int verticeEscolhido(vector<vector<int>> &listaAdj){
     int maior = 0;
-    for (int i = 1; i < graus.size(); i++) {
-        if (graus[i].size() > graus[maior].size()) 
+    for (int i = 1; i < listaAdj.size(); i++) {
+        if (listaAdj[i].size() >= listaAdj[maior].size()) 
             maior = i;
     }
 
     return maior;
 }
 
-bool ehViavel(vector<vector<int>> &graus) {
-    for (int i = 0; i < graus.size(); i++) {
-        if (graus[i].size() > 2) return false;
+bool ehViavel(vector<vector<int>> &listaAdj) {
+    for (int i = 0; i < listaAdj.size(); i++) {
+        if (listaAdj[i].size() != 2) return false;
     }
 
     return true;

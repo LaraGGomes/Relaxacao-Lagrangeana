@@ -3,8 +3,8 @@
 Kruskal::Kruskal(vvi dist, vector<double> &pen){
 	// mudei o algoritmo original para desconsiderar o primeiro vértice
 	for(int i = 1; i < dist.size(); ++i){
-		for(int j = 1; j < dist[i].size(); ++j){
-			graph.push( make_pair(-dist[i][j] - pen[i] - pen[j], make_pair(i, j)) );
+		for(int j = i+1; j < dist[i].size(); ++j){
+			graph.push( make_pair(-dist[i][j] + pen[i] + pen[j], make_pair(i, j)) );
 		}	
 	}
 }

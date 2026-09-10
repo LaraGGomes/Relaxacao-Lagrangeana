@@ -10,6 +10,7 @@ int main(int argc, char** argv) {
     auto data = Data(2, argv[1]);
     data.read();
     string branching = argv[2];
+    double UB = stod(argv[3]);
 
     size_t n = data.getDimension();
 
@@ -20,15 +21,9 @@ int main(int argc, char** argv) {
 		}
 	}
 
-    //vector<double> p = SolveLagrangianDual(4000, 10e-5, 30, cost, data);
+    double res = framework(UB+1, branching, cost);
 
-    // cout << "Penalizadores: " << endl;
-    // for (auto x : p) {
-    //     cout << x << ' ';
-    // }
-    // cout << endl;
-
-    // perguntar sobre as páginas faltantes no kit
+    cout << "Melhor custo: " << res << '\n';
 
     return 0;
 }

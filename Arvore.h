@@ -4,7 +4,6 @@
 #include <vector>
 #include <algorithm>
 #include <list>
-#include "algoritmo-hungaro/src/hungarian.h"
 #include "min-spanning-tree/Kruskal.h"
 
 using namespace std;
