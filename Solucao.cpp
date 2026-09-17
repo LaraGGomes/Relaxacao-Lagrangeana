@@ -92,7 +92,7 @@ vector<double> SolveLagrangianDual(double UB, double puloMin, int kMax, double &
             }
         }
 
-        if (w >= UB || stopCriterion(graus, penalizadores)) break;
+        if (UB - w <= 10e-6 || stopCriterion(graus, penalizadores)) break;
 
         // cálculo tamanho do pulo
         double tp = pulo*(UB - w)/soma_quadrados;
@@ -180,7 +180,7 @@ double framework(double UB, string &modo, vvi &cost) {
 
                 novaSolucao(n, UB, puloMin, kMax, node->penalizadores, cost);
 
-                if (n.lower_bound <= UB) {
+                if (UB - n.lower_bound > 10e-6) {
                     arvore.push_back(n);
                 }
             }
