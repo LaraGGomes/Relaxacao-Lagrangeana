@@ -1,4 +1,4 @@
-# Branch and Bound (BnB)
+# Relaxação Lagrangeana
 
 Compilar o programa: 
 
